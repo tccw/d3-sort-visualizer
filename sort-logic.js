@@ -7,7 +7,6 @@ const HEIGHT = 105;
  */
 const n = 20;
 var arr = Array.from({length: n}, (_, i) => (i + 1) * 5);
-const sorted = Array.from({length: n}, (_, i) => (i + 1) * 5);
 
 /**
  * "Fisher-Yates" shuffle operating on the 
@@ -86,7 +85,6 @@ function clearPoylgons() {
     svgContainer.selectAll("polygon").remove();
 }
 
-// TODO: consider using a known array to tell if an element is sorted, and if it is change its color
 function changeBarColor(color) {
     let prev = arr[0];
     for (let i = 1; i < arr.length; i++) {
@@ -119,8 +117,9 @@ function swap(i, j) {
     [arr[i], arr[j]] = [arr[j], arr[i]]; // ES6 style
 }
 
+/** Quicksort implementation */
 function quicksort() {
-    /** Recursive call with callback to update charte and remove tracker markers (polygons) */
+    /** Recursive call with callback to update chart and remove tracker markers (polygons) */
     quicksortRecur(0, arr.length - 1, () => {
         updateBars();
         clearPoylgons();
@@ -128,7 +127,7 @@ function quicksort() {
 }
 
 /**
- * Mid value pivot implementation of quicksort 
+ * End value pivot implementation of quicksort 
  * @global {array to sort} arr  
  * @param {the first index of the array i.e. 0} lo 
  * @param {last index of the array i.e. (list.length - 1)} hi 
@@ -137,23 +136,9 @@ async function quicksortRecur(lo, hi, callback) {
     trackerArrowId("pivot_arrow", "green", hi);
     /** Only sort if lo index < hi index, i.e. if we haven't looked through the entire list yet */
     if (lo < hi) {
-        
-        /** Choose the pivot to be the last index of the subarray */
-        let pivot = arr[hi];
-        let i = lo;
-        for (let j = lo; j <= hi; j++) { 
-            if (arr[j] < pivot) {
-                swap(i, j);
-                i++;
-                updateBars();
-                trackerArrowId("blue_arrow", "blue", j);
-                trackerArrowId("red_arrow", "red", i);
-                await sleep();
-            }
-        }
-        swap(i, hi);
-        quicksortRecur(lo, i - 1, callback); // move into a set timeout callback for async function
-        quicksortRecur(i + 1, hi, callback);
+        let p = await qsortPartition(lo, hi);
+        await quicksortRecur(lo, p - 1, callback);
+        await quicksortRecur(p + 1, hi, callback);
     } else {
         callback();
     }
@@ -169,15 +154,15 @@ async function qsortPartition(lo, hi) {
     let pivot = arr[hi];
     let i = lo;
     for (let j = lo; j < hi; j++) {
+        trackerArrowId("blue_arrow", "blue", j);
         if (arr[j] < pivot) {
             swap(i, j);
             i++;
+            trackerArrowId("red_arrow", "red", i);
             updateBars();
         }
         await sleep();
     }
-
-    /** Place the  */
     swap(i, hi);
     return i;
 }
@@ -272,3 +257,5 @@ async function selectionsort() {
     }
     clearPoylgons();
 }
+
+module.exports = bubblesort, quicksort, selectionsort, insertionsort
