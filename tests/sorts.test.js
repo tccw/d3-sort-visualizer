@@ -1,8 +1,7 @@
-import { test } from "@jest/globals"
-import {bubblesort} from "mybarchart.js"
+const sort = require('../sort-logic');
 
-// var expected
+var expected = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-// test('Bubble Sort', () => {
-//     expect(bubblesort())
-// } 
+test('Bubble Sort', () => {
+    expect(sort.bubblesort().toEqual(expected));
+})
