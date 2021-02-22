@@ -1,5 +1,6 @@
 
 var arr;
+var size;
 
 function swap(i, j) {
     [arr[i], arr[j]] = [arr[j], arr[i]]; // ES6 style
@@ -8,16 +9,20 @@ function swap(i, j) {
 /** Heap sort implementation */
 function heapsort(input_arr) {
     arr = input_arr;
+    size = input_arr.length;
     /** Reorder the array such that it represents a heap*/
     buildHeap();
 
     /** Min pop from the heap placing each popped element after the last popped, which sorts the list */
+    while (size > 0) {
+        heapSwap();
+    }
     return arr;
 }
 
 function buildHeap() {
     /** Star building the heap by looking at smallest, final subtree */
-    for (let i = parent(arr.length - 1); i >= 0; i-- ) {
+    for (let i = parent(size - 1); i >= 0; i-- ) {
         heapifyDown(i);
     }
 }
@@ -35,22 +40,28 @@ function heapifyDown(i) {
 
 function hasAChild(i) {
     /** If the left child index is out of bounds, the right child will be too, so the elem has no children */
-    return leftChild(i) < arr.length;
+    return leftChild(i) < size;
 }
 
+/**
+ * INVARIANT: node position passed will always have at least one child
+ * @param {index position of parent in the heap} i 
+ */
 function minChild(i) {
-    /** JS will return undefined if an array is indexed outside its boundary */
     let left = leftChild(i);
     let right = rightChild(i);
-    if (typeof arr[left] !== 'undefined' && typeof arr[right] !== 'undefined') {
+    if (left < size && right < size) {
         return (arr[left] > arr[right]) ? left : right;
     } else {
-        return (typeof arr[left] == 'undefined') ? right : left;
+        return (left < size) ? left : right; 
     }
 }
 
-function minPop() {
-    
+function heapSwap() {
+    /** Swap the first element with the last elemtn */
+    swap(0, size-1);
+    size--;
+    heapifyDown(0);
 }
 
 function parent(i) {
