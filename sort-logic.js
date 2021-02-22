@@ -1,6 +1,7 @@
 // General constants
 const WIDTH = 105;
 const HEIGHT = 105;
+const sortAlgs = ["quicksort", "bubblesort", ""]
 
 /**
  * Create a global array of size n and fill it with values 0..n
@@ -171,7 +172,6 @@ async function qsortPartition(lo, hi) {
  * Bubble sort implementation
  * @global {array to sort} arr  
  */
-// TODO: fix tracker arrows for bubblesort
 async function bubblesort() {
     let len = arr.length;
 
@@ -258,4 +258,66 @@ async function selectionsort() {
     clearPoylgons();
 }
 
-module.exports = bubblesort, quicksort, selectionsort, insertionsort
+/** Heap sort implementation */
+function heapsort() {
+    /** Reorder the array such that it represents a heap*/
+    buildHeap();
+
+    /** Min pop from the heap placing each popped element after the last popped, which sorts the list */
+
+}
+
+function buildHeap() {
+    /** Star building the heap by looking at smallest, final subtree */
+    for (let i = parent(arr.length - 1); i >= 0; i-- ) {
+        heapifyDown(i);
+    }
+}
+
+function heapifyDown(i) {
+    if (hasAChild(i)) {
+        let minChildIndex = minChild(i);
+        console.log(minChildIndex);
+        if (arr[i] < arr[minChildIndex]) {
+            swap(i, minChildIndex);
+            heapifyDown(minChildIndex);
+        }
+    }
+}
+
+function hasAChild(i) {
+    /** If the left child index is out of bounds, the right child will be too, so the elem has no children */
+    return leftChild(i) > arr.length;
+}
+
+function minChildIndex(i) {
+    /** JS will return undefined if an array is indexed outside its boundary */
+    let left = leftChild(i);
+    let right = arr[rightChild(i)];
+    if (typeof arr[left] !== 'undefined' && typeof arr[right] !== 'undefined') {
+        return (arr[left] > arr[right]) ? left : right;
+    } else {
+        return (typeof arr[left] == 'undefined') ? right : left;
+    }
+}
+
+function minPop() {
+    
+}
+
+function parent(i) {
+    /** 
+     * Recall that left child of a node is (2 * i) + 1
+     * and the right child is (2 * i) + 2 for 1-based heap
+     */
+    
+    return (i - 1) / 2;
+}
+
+function leftChild(i) {
+    return (i * 2) + 1;
+}
+
+function rightChild(i) {
+    return (i * 2) + 2;
+}
