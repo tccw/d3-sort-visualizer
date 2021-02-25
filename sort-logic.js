@@ -1,18 +1,19 @@
 // General constants
 const WIDTH = 105;
 const HEIGHT = 105;
+const sortAlgs = ["quicksort", "bubblesort", ""]
 
 /**
  * Create a global array of size n and fill it with values 0..n
  */
 const n = 20;
-var arr = Array.from({length: n}, (_, i) => (i + 1) * 5);
+var arr = Array.from({length: n}, (_, i) => (i + 1) * (Math.floor(WIDTH / n)));
 
 /**
  * "Fisher-Yates" shuffle operating on the 
  * global variable arr
  */
-function shuffleArray() {
+async function shuffleArray() {
     allSameColor("grey");
     var indexes = Array.from(Array(n).keys());
     let i;
@@ -20,7 +21,7 @@ function shuffleArray() {
         i = Math.floor((Math.random() * j))
         swap(i, j);
     }
-    updateBars();    
+    await updateBars(0);    
 }
 
 
@@ -57,11 +58,16 @@ var barAttributes = bars.attr("x", 2)
  * The rects need to have a name that will change when the array is updated otherwise
  * they will not change positon. This can be done by settings the name to the value.
  */
-function updateBars() {
+async function updateBars(timeout) {
     svgContainer
         .selectAll("rect")
         .data(arr, function(d) {return d})
         .attr("y", function(d, i) { return y_scale(i); })
+    if (typeof timeout !== 'undefined') {
+        await sleep(timeout);
+    } else {
+        await sleep();
+    }
 }
 
 function trackerArrowId(id, color, i) {
@@ -83,18 +89,6 @@ function trackerArrowId(id, color, i) {
 
 function clearPoylgons() {
     svgContainer.selectAll("polygon").remove();
-}
-
-function changeBarColor(color) {
-    let prev = arr[0];
-    for (let i = 1; i < arr.length; i++) {
-        if (arr[i] > prev) {
-            svgContainer.select(`${"#elem_" + i-1}`).attr("fill", color);
-            prev = arr[i];
-        } else {
-            break;
-        }
-    }
 }
 
 function allSameColor(color) {
@@ -121,7 +115,7 @@ function swap(i, j) {
 function quicksort() {
     /** Recursive call with callback to update chart and remove tracker markers (polygons) */
     quicksortRecur(0, arr.length - 1, () => {
-        updateBars();
+        updateBars(0);
         clearPoylgons();
     })    
 }
@@ -159,9 +153,8 @@ async function qsortPartition(lo, hi) {
             swap(i, j);
             i++;
             trackerArrowId("red_arrow", "red", i);
-            updateBars();
         }
-        await sleep();
+        await updateBars();
     }
     swap(i, hi);
     return i;
@@ -171,7 +164,6 @@ async function qsortPartition(lo, hi) {
  * Bubble sort implementation
  * @global {array to sort} arr  
  */
-// TODO: fix tracker arrows for bubblesort
 async function bubblesort() {
     let len = arr.length;
 
@@ -191,10 +183,9 @@ async function bubblesort() {
                 swap(j, j-1);
                 swapped = true;
                 trackerArrowId("bubble_arrow", "red", j-1);
-                updateBars();
             } 
             /** Sleep every iteration for timing comparison */
-            await sleep();
+            await updateBars();
         }
         /** 
          * If swapped is still false, then every element is in its correct location 
@@ -214,12 +205,10 @@ async function insertionsort() {
         while (j > 0 && arr[j - 1] > arr[j]) {
             swap(j, j-1);
             trackerArrowId("red_arrow", "red", j-1)
-            updateBars();
+            await updateBars();
             j--;
-            await sleep();
         }
         await sleep();
-        changeBarColor("black");
     }
 
     clearPoylgons();
@@ -251,11 +240,99 @@ async function selectionsort() {
         /** Swap elements only if the start of the current  subarray isn't also the min elem */
         if (min_idx != i) {
             swap(i,min_idx);
-            updateBars();
-            await sleep();
+            await updateBars();
         } 
     }
     clearPoylgons();
 }
 
-module.exports = bubblesort, quicksort, selectionsort, insertionsort
+/** Heap sort implementation  --------------------------------------------- */
+var size;
+
+/** Heap sort implementation */
+async function heapsort() {
+    size = arr.length;
+    /** Reorder the array such that it represents a heap*/
+    await buildHeap();
+    console.log(arr);
+
+    /** Swap the first and last elements, heapify down, and repeat until sorted */
+    while (size > 0) {
+        await heapSwap();
+    }
+    clearPoylgons();
+}
+
+async function buildHeap() {
+    /** Star building the heap by looking at smallest, final subtree */
+    for (let i = parent(size - 1); i >= 0; i-- ) {
+        heapifyDown(i);
+        trackerArrowId("heap_tracker", "red", i);
+        await updateBars();
+    }
+}
+
+function heapifyDown(i) {
+    if (hasAChild(i)) {
+        let maxChildIndex = maxChild(i);
+        if (arr[i] < arr[maxChildIndex]) {
+            swap(i, maxChildIndex);
+            heapifyDown(maxChildIndex);
+        }
+    }
+}
+
+function hasAChild(i) {
+    /** If the left child index is out of bounds, the right child will be too, so the elem has no children */
+    return leftChild(i) < size;
+}
+
+/**
+ * INVARIANT: node position passed will always have at least one child
+ * @param {index position of parent in the heap} i 
+ */
+function maxChild(i) {
+    let left = leftChild(i);
+    let right = rightChild(i);
+    if (left < size && right < size) {
+        return (arr[left] > arr[right]) ? left : right;
+    } else {
+        return (left < size) ? left : right; 
+    }
+}
+
+/** Similar to a maxPop function.
+ * Swapping the first and last element puts the max valued at the end
+ * of the array. Decrement size and heapify the remaining sublist. 
+ */
+async function heapSwap() {
+    /** Swap the first element with the last elem */
+    swap(0, size-1);
+    await updateBars();
+    size--;
+    trackerArrowId("heap_tracker", "red", 0);
+    await sleep(50);
+    trackerArrowId("heap_tracker", "red", size);
+
+    /** Heapify down from the root of the new subarray */
+    heapifyDown(0);
+}
+
+function parent(i) {
+    /** 
+     * Recall that left child of a node is (2 * i) + 1
+     * and the right child is (2 * i) + 2 for 1-based heap
+     */
+    
+    return (i - 1) / 2;
+}
+
+function leftChild(i) {
+    return (i * 2) + 1;
+}
+
+function rightChild(i) {
+    return (i * 2) + 2;
+}
+
+/** End heap sort --------------------------------------------- */
