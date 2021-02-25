@@ -247,6 +247,7 @@ async function selectionsort() {
 }
 
 /** Heap sort implementation  --------------------------------------------- */
+// TODO there are still some edge cases that heapsort is not working for
 var size;
 
 /** Heap sort implementation */
@@ -264,7 +265,7 @@ async function heapsort() {
 }
 
 async function buildHeap() {
-    /** Star building the heap by looking at smallest, final subtree */
+    /** Start building the heap by looking at smallest, final subtree */
     for (let i = parent(size - 1); i >= 0; i-- ) {
         heapifyDown(i);
         trackerArrowId("heap_tracker", "red", i);
@@ -311,7 +312,7 @@ async function heapSwap() {
     await updateBars();
     size--;
     trackerArrowId("heap_tracker", "red", 0);
-    await sleep(50);
+    await sleep(30);
     trackerArrowId("heap_tracker", "red", size);
 
     /** Heapify down from the root of the new subarray */
@@ -321,7 +322,7 @@ async function heapSwap() {
 function parent(i) {
     /** 
      * Recall that left child of a node is (2 * i) + 1
-     * and the right child is (2 * i) + 2 for 1-based heap
+     * and the right child is (2 * i) + 2 for 0-based heap
      */
     
     return (i - 1) / 2;
