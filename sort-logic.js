@@ -21,7 +21,8 @@ async function shuffleArray() {
         i = Math.floor((Math.random() * j))
         swap(i, j);
     }
-    await updateBars(0);    
+    await updateBars(0);   
+    console.log("Shuffled Array: " + arr); 
 }
 
 
@@ -255,7 +256,6 @@ async function heapsort() {
     size = arr.length;
     /** Reorder the array such that it represents a heap*/
     await buildHeap();
-    console.log(arr);
 
     /** Swap the first and last elements, heapify down, and repeat until sorted */
     while (size > 0) {
